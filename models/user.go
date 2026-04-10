@@ -6,5 +6,5 @@ type User struct {
 	Email      string      `gorm:"Unique" json:"email"`
 	Bio        string      `json:"bio"`
 	Flashcards []Flashcard `gorm:"foreignKey:UserID" json:"flashcards"`
-	Password   string      `json:"password"`
+	Password   string      `json:"-"`
 }

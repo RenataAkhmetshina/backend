@@ -62,54 +62,23 @@ func GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func CreateUser(c *gin.Context) {
-	var newUser models.User
-
-	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	password := newUser.Password
-	if len(password) < 8 {
-		c.JSON(400, gin.H{"error": "Password must be at least 8 characters"})
-		return
-	}
-
-	result := db.DB.Create(&newUser)
-
-	if result.Error != nil {
-		c.JSON(400, gin.H{"error": "Error while creating a new user"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
-
-}
-
 func UpdateUser(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id"})
-		return
-	}
-
-	var updatedUser models.User
-	if err := c.ShouldBindJSON(&updatedUser); err != nil {
+	var input models.User
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	result := db.DB.Model(&models.User{}).Where("user_id = ?", id).Updates(updatedUser)
+	result := db.DB.Model(&models.User{}).Where("user_id = ?", id).Select("Bio", "Email").Updates(input)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while updating the user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
-
 }
 
 func DeleteUser(c *gin.Context) {
@@ -118,6 +87,10 @@ func DeleteUser(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id"})
 		return
+	}
+
+	if err := db.DB.Where("user_id = ?", userId).Delete(&models.Flashcard{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete users's flashcards"})
 	}
 
 	result := db.DB.Delete(&models.User{}, userId)

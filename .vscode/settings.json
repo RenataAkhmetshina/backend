@@ -1,0 +1,15 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "database": "FlashcardLearningApp",
+            "username": "postgres",
+            "password": "123",
+            "name": "FlashcardApp_Local"
+        }
+    ]
+}

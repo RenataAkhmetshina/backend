@@ -3,6 +3,7 @@ package main
 import (
 	"FlashcardLearningApp/db"
 	"FlashcardLearningApp/handlers"
+	"FlashcardLearningApp/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,23 +13,32 @@ func main() {
 
 	r := gin.Default()
 
-	// Flashcards
-	r.GET("/flashcards", handlers.GetAllFlashcards)
-	r.GET("/flashcards/:id", handlers.GetFlashcardById)
-	r.POST("/flashcards", handlers.CreateFlashcard)
-	r.PUT("/flashcards/:id", handlers.UpdateFlashcard)
-	r.DELETE("/flashcards/:id", handlers.DeleteFlashcard)
+	public := r.Group("/auth")
+	{
+		public.POST("/register", handlers.Register)
+		public.POST("/login", handlers.Login)
+	}
 
-	// Categpries
-	r.GET("/categories", handlers.GetAllCategories)
-	r.POST("/categories", handlers.CreateCategory)
+	private := r.Group("/api")
+	private.Use(middleware.AuthMiddleware())
+	{
+		// Flashcards
+		private.GET("/flashcards", handlers.GetAllFlashcards)
+		private.GET("/flashcards/:id", handlers.GetFlashcardById)
+		private.POST("/flashcards", handlers.CreateFlashcard)
+		private.PUT("/flashcards/:id", handlers.UpdateFlashcard)
+		private.DELETE("/flashcards/:id", handlers.DeleteFlashcard)
 
-	// Users
-	r.GET("/users", handlers.GetAllUsers)
-	r.GET("/users/:id", handlers.GetUserById)
-	r.POST("/users", handlers.CreateUser)
-	r.PUT("/users/:id", handlers.UpdateUser)
-	r.DELETE("/users/:id", handlers.DeleteUser)
+		// Categpries
+		private.GET("/categories", handlers.GetAllCategories)
+		private.POST("/categories", handlers.CreateCategory)
+
+		// Users
+		private.GET("/users", handlers.GetAllUsers)
+		private.GET("/users/:id", handlers.GetUserById)
+		private.PUT("/users/:id", handlers.UpdateUser)
+		private.DELETE("/users/:id", handlers.DeleteUser)
+	}
 
 	r.Run(":8080")
 }
