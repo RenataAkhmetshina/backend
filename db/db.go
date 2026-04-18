@@ -3,7 +3,7 @@ package db
 import (
 	"log"
 
-	"FlashcardLearningApp/models"
+	//"FlashcardLearningApp/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -20,10 +20,10 @@ func Connect() {
 	}
 	log.Println("Connected successfully!")
 
-	log.Println("Migration in progress...")
-	err = DB.AutoMigrate(&models.User{}, &models.Category{}, &models.Flashcard{})
-	if err != nil {
-		log.Fatal("Migration failed:", err)
-	}
+	//log.Println("Migration in progress...")
+	// err = DB.AutoMigrate(&models.User{}, &models.Category{}, &models.Flashcard{})
+	// if err != nil {
+	// 	log.Fatal("Migration failed:", err)
+	// }
 	log.Println("Database migrated successfully!")
 }
