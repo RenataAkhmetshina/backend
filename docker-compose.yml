@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  user_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: user_service
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  flashcard_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: flashcard_service
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      user_db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=user_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=123
+      - DB_NAME=user_service
+
+  flashcard-service:
+    build: ./flashcard-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      flashcard_db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=flashcard_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=123
+      - DB_NAME=flashcard_service

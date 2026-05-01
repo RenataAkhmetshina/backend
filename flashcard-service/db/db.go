@@ -1,7 +1,9 @@
 package db
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"FlashcardLearningApp/flashcard-service/models"
 
@@ -12,18 +14,30 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-	dsn := "host=localhost user=postgres password=123 dbname=flashcard_service port=5432 sslmode=disable"
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+
+	if host == "" {
+		host = "localhost"
+	}
+	if port == "" {
+		port = "5432"
+	}
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		host, user, pass, dbname, port)
+
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Database connection error:", err)
 	}
-	log.Println("Connected successfully!")
 
-	log.Println("Migration in progress...")
 	err = DB.AutoMigrate(&models.Category{}, &models.Flashcard{}, &models.FavoriteCategories{})
 	if err != nil {
 		log.Fatal("Migration failed:", err)
 	}
-	log.Println("Database migrated successfully!")
 }
