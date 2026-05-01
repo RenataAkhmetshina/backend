@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"FlashcardLearningApp/db"
-	"FlashcardLearningApp/models"
+	"FlashcardLearningApp/user-service/db"
+	"FlashcardLearningApp/user-service/models"
 	"net/http"
 	"time"
 
@@ -58,6 +58,7 @@ func Login(c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":  foundUser.UserID,
 		"username": foundUser.Username,
 		"exp":      time.Now().Add(time.Hour * 1).Unix(),
 	})

@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"FlashcardLearningApp/db"
-	"FlashcardLearningApp/models"
+	"FlashcardLearningApp/user-service/client"
+	"FlashcardLearningApp/user-service/db"
+	"FlashcardLearningApp/user-service/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +21,7 @@ func GetAllUsers(c *gin.Context) {
 
 	query := db.DB.Model(&models.User{})
 
-	username := c.Query("userName")
+	username := c.Query("username")
 	email := c.Query("email")
 
 	if username != "" {
@@ -65,6 +66,18 @@ func GetUserById(c *gin.Context) {
 func UpdateUser(c *gin.Context) {
 	id := c.Param("id")
 
+	authenticatedUserID, exists := c.Get("user_id")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	if id != strconv.FormatUint(uint64(authenticatedUserID.(uint)), 10) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You can only update your own account"})
+		return
+	}
+
 	var input models.User
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
@@ -82,24 +95,32 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	userId, err := strconv.Atoi(c.Param("id"))
+	userId := c.Param("id")
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id"})
+	authenticatedUserID, exists := c.Get("user_id")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	if err := db.DB.Where("user_id = ?", userId).Delete(&models.Flashcard{}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete users's flashcards"})
+	if userId != strconv.FormatUint(uint64(authenticatedUserID.(uint)), 10) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You can only delete your own account"})
+		return
+	}
+
+	fcClient := client.NewFlashcardClient()
+
+	if err := fcClient.WipeUserData(userId); err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Could not sync with flashcard service"})
+		return
 	}
 
 	result := db.DB.Delete(&models.User{}, userId)
-
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while deleting the user"})
+		c.JSON(500, gin.H{"error": "Failed to delete user"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User successfully deleted"})
-
+	c.JSON(http.StatusOK, gin.H{"message": "User and data deleted successfully"})
 }

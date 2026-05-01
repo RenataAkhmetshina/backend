@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"FlashcardLearningApp/db"
-	"FlashcardLearningApp/models"
+	"FlashcardLearningApp/flashcard-service/db"
+	"FlashcardLearningApp/flashcard-service/models"
 	"net/http"
 	"strconv"
 
@@ -11,17 +11,25 @@ import (
 
 func GetAllFavoriteCategories(c *gin.Context) {
 	var favorites []models.FavoriteCategories
-	result := db.DB.Find(&favorites)
+
+	user_id, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	result := db.DB.Where("user_id = ?", user_id).Find(&favorites)
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error while fetching favorites"})
+		return
 	}
 
 	c.JSON(http.StatusOK, favorites)
 }
 
 func AddToFavoriteCategories(c *gin.Context) {
-	category_id, err := strconv.Atoi(c.Param("category_id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	user_id, exists := c.Get("user_id")
 
 	if err != nil {
@@ -35,14 +43,14 @@ func AddToFavoriteCategories(c *gin.Context) {
 	}
 
 	var category models.Category
-	if err := db.DB.First(&category, category_id).Error; err != nil {
+	if err := db.DB.First(&category, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "The category you are trying to favorite does not exist"})
 		return
 	}
 
 	favorite := models.FavoriteCategories{
 		UserId:     user_id.(uint),
-		CategoryId: uint(category_id),
+		CategoryId: uint(id),
 	}
 
 	if err := db.DB.Create(&favorite).Error; err != nil {
@@ -54,7 +62,7 @@ func AddToFavoriteCategories(c *gin.Context) {
 }
 
 func DeleteFromFavoriteCategories(c *gin.Context) {
-	category_id, err := strconv.Atoi(c.Param("category_id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	user_id, _ := c.Get("user_id")
 
 	if err != nil {
@@ -62,7 +70,7 @@ func DeleteFromFavoriteCategories(c *gin.Context) {
 		return
 	}
 
-	result := db.DB.Where("user_id = ? AND category_id = ?", user_id, category_id).Delete(&models.FavoriteCategories{})
+	result := db.DB.Where("user_id = ? AND category_id = ?", user_id, id).Delete(&models.FavoriteCategories{})
 
 	if result.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Could not find record"})

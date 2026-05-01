@@ -1,23 +1,16 @@
 package main
 
 import (
-	"FlashcardLearningApp/db"
-	"FlashcardLearningApp/handlers"
-	"FlashcardLearningApp/middleware"
+	"FlashcardLearningApp/flashcard-service/db"
+	"FlashcardLearningApp/flashcard-service/handlers"
+	"FlashcardLearningApp/flashcard-service/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	db.Connect()
-
 	r := gin.Default()
-
-	public := r.Group("/auth")
-	{
-		public.POST("/register", handlers.Register)
-		public.POST("/login", handlers.Login)
-	}
 
 	private := r.Group("/api")
 	private.Use(middleware.AuthMiddleware())
@@ -29,16 +22,20 @@ func main() {
 		private.PUT("/flashcards/:id", handlers.UpdateFlashcard)
 		private.DELETE("/flashcards/:id", handlers.DeleteFlashcard)
 
-		// Categpries
+		// Categories
 		private.GET("/categories", handlers.GetAllCategories)
 		private.POST("/categories", handlers.CreateCategory)
 
-		// Users
-		private.GET("/users", handlers.GetAllUsers)
-		private.GET("/users/:id", handlers.GetUserById)
-		private.PUT("/users/:id", handlers.UpdateUser)
-		private.DELETE("/users/:id", handlers.DeleteUser)
+		// FavoriteCategories
+		private.GET("categories/favorites/", handlers.GetAllFavoriteCategories)
+		private.PUT("/categories/:id/favorites", handlers.AddToFavoriteCategories)
+		private.DELETE("/categories/:id/favorites", handlers.DeleteFromFavoriteCategories)
 	}
 
-	r.Run(":8080")
+	internal := r.Group("/internal")
+	{
+		internal.DELETE("/flashcards/user/:userId", handlers.DeleteAllUserFlashcards)
+	}
+
+	r.Run(":8082")
 }

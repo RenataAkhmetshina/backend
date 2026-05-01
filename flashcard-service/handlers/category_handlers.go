@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"FlashcardLearningApp/db"
-	"FlashcardLearningApp/models"
+	"FlashcardLearningApp/flashcard-service/db"
+	"FlashcardLearningApp/flashcard-service/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +14,7 @@ func GetAllCategories(c *gin.Context) {
 
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error while fetching categories"})
+		return
 	}
 
 	c.JSON(http.StatusOK, categories)
