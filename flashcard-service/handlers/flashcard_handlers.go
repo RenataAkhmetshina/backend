@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"FlashcardLearningApp/flashcard-service/client"
 	"FlashcardLearningApp/flashcard-service/db"
 	"FlashcardLearningApp/flashcard-service/models"
 
@@ -68,14 +69,17 @@ func GetFlashcardById(c *gin.Context) {
 }
 
 func CreateFlashcard(c *gin.Context) {
-	var newFlashcard models.Flashcard
+	user_id, _ := c.Get("user_id")
+	token := c.GetHeader("Authorization")[7:]
 
-	user_id, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+	userClient := client.NewUserClient()
+	exists, err := userClient.CheckUserExists(user_id.(uint), token)
+	if err != nil || !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User does not exist"})
 		return
 	}
 
+	var newFlashcard models.Flashcard
 	if err := c.ShouldBindJSON(&newFlashcard); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
