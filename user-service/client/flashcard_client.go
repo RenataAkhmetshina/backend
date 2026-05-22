@@ -25,9 +25,14 @@ func NewFlashcardClient() *FlashcardClient {
 }
 
 func (fc *FlashcardClient) WipeUserData(userID string) error {
-	resp, err := fc.client.R().
-		Delete(fmt.Sprintf("http://localhost:8082/internal/flashcards/user/%s", userID))
+	baseURL := os.Getenv("FLASHCARD_SERVICE_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:8082"
+	}
 
+	url := fmt.Sprintf("%s/internal/flashcards/user/%s", baseURL, userID)
+
+	resp, err := fc.client.R().Delete(url)
 	if err != nil {
 		return err
 	}

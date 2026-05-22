@@ -42,6 +42,8 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=123
       - DB_NAME=user_service
+      - FLASHCARD_SERVICE_URL=http://flashcard-service:8082
+      - INTERNAL_SERVICE_KEY=super_secret_key
 
   flashcard-service:
     build: ./flashcard-service
@@ -56,3 +58,5 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=123
       - DB_NAME=flashcard_service
+      - USER_SERVICE_URL=http://user-service:8081
+      - INTERNAL_SERVICE_KEY=super_secret_key
