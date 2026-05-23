@@ -16,6 +16,8 @@ func main() {
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"}
+
 	config.AllowHeaders = []string{
 		"Origin",
 		"Content-Type",

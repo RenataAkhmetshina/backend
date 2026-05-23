@@ -108,7 +108,7 @@ func UpdateFlashcard(c *gin.Context) {
 		return
 	}
 
-	user_id, exists := c.Get("userID")
+	user_id, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -150,7 +150,7 @@ func DeleteFlashcard(c *gin.Context) {
 		return
 	}
 
-	userID, _ := c.Get("userID")
+	userID, _ := c.Get("user_id")
 
 	result := db.DB.Where("flashcard_id = ? AND user_id = ?", flashcardId, userID.(uint)).Delete(&models.Flashcard{})
 
