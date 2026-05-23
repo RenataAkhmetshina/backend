@@ -5,12 +5,26 @@ import (
 	"FlashcardLearningApp/flashcard-service/handlers"
 	"FlashcardLearningApp/flashcard-service/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	db.Connect()
 	r := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+
+	config.AllowHeaders = []string{
+		"Origin",
+		"Content-Type",
+		"Content-Length",
+		"Accept",
+		"Authorization",
+	}
+
+	r.Use(cors.New(config))
 
 	private := r.Group("/api")
 	private.Use(middleware.AuthMiddleware())
