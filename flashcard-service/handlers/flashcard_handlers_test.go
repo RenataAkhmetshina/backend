@@ -159,7 +159,7 @@ func TestUpdateFlashcardHandler(t *testing.T) {
 	r := gin.New()
 
 	r.PUT("/flashcards/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
+		c.Set("user_id", uint(1))
 		c.Next()
 	}, handlers.UpdateFlashcard)
 
@@ -202,7 +202,7 @@ func TestDeleteFlashcardHandler(t *testing.T) {
 	r := gin.New()
 
 	r.DELETE("/flashcards/:id", func(c *gin.Context) {
-		c.Set("userID", uint(1))
+		c.Set("user_id", uint(1))
 		c.Next()
 	}, handlers.DeleteFlashcard)
 
